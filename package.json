@@ -1,0 +1,24 @@
+{
+  "name": "liri-node-app-jl",
+  "version": "1.0.0",
+  "description": "gtbootcamphw-liri-node-bot-app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jliip51/liri-node-app.git"
+  },
+  "author": "jeff liipfert",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jliip51/liri-node-app/issues"
+  },
+  "homepage": "https://github.com/jliip51/liri-node-app#readme",
+  "dependencies": {
+    "node-spotify-api": "^1.0.5",
+    "request": "^2.81.0",
+    "twitter": "^1.7.1"
+  }
+}
