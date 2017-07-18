@@ -27,18 +27,22 @@ function getTweets() {
       console.log(result.text);
       console.log("---------------------------------");
 
-      fs.appendFile("log.txt",
-        "command: " + command +
-        "\nrequested: " + moment().format('LLLL') +
-        "\nuser: " + result.user.screen_name +
-        "\nposted: " + result.created_at +
-        "\ntweet: " + result.text + ",\n\n", 'utf8',
-        function(error) {
+      var logData = {
+        "command": command,
+        "requested": moment().format('LLLL'),
+        "user":  result.user.screen_name,
+        "posted": result.created_at,
+        "tweet": result.text
+      };
+
+      var logDataJSON = JSON.stringify(logData, null, 2);
+
+      fs.appendFile("log.txt", logDataJSON, function(error) {
           if (error) {
             return console.log('Error occurred: ' + error)
           }
           console.log("Result has been saved to log");
-        });
+      });
     });
   });
 };
@@ -64,10 +68,13 @@ function getSong() {
     }
     var itemArr = response.tracks.items[0];
     var linkURL = "";
+    var dataLink = "";
     if (itemArr.preview_url != null) {
       linkURL = "Preview Link: " + itemArr.preview_url;
+      dataLink = itemArr.preview_url;
     } else {
       linkURL = "Spotify Link: " + itemArr.external_urls.spotify;
+      dataLink = itemArr.external_urls.spotify;
     }
 
     console.log("\nArtist Name: " + itemArr.artists[0].name);
@@ -75,14 +82,18 @@ function getSong() {
     console.log(linkURL);
     console.log("Album: " + itemArr.album.name);
 
-    fs.appendFile("log.txt",
-      "command: " + command +
-      "\nrequested: " + moment().format('LLLL') +
-      "\nArtist Name: " + itemArr.artists[0].name +
-      "\nTrack Name: " + itemArr.name +
-      "\n" + linkURL +
-      "\nAlbum: " + itemArr.album.name + ",\n\n", 'utf8',
-      function(error) {
+    var logData = {
+      "command": command,
+      "requested": moment().format('LLLL'),
+      "artist_name": itemArr.artists[0].name,
+      "track_name": itemArr.name,
+      "url": dataLink,
+      "album": itemArr.album.name
+    };
+
+    var logDataJSON = JSON.stringify(logData, null, 2);
+
+    fs.appendFile("log.txt", logDataJSON, function(error) {
         if (error) {
           return console.log('Error occurred: ' + error);
         }
@@ -111,26 +122,40 @@ function getMovie() {
     console.log("\nMovie Title: " + result.Title);
     console.log("Release Year: " + result.Year);
 
-    for (var i = 0; i < 2; i++) {
-      console.log(result.Ratings[i].Source + " Rating: " + result.Ratings[i].Value);
-    }
+    if (result.Ratings.length > 1){
+      for (var i = 0; i < 2; i++) {
+        console.log(result.Ratings[i].Source + " Rating: " + result.Ratings[i].Value);
+        var dataLogRating = [{
+          "source": result.Ratings[0].Source, "value": result.Ratings[0].Value
+        }, {
+          "source": result.Ratings[1].Source, "value": result.Ratings[1].Value
+        }];
+      }
+    } else {
+        console.log(result.Ratings.Source + " Rating: " + result.Ratings.Value);
+        dataLogRating = [{"source": result.Ratings.Source, "value": result.Ratings.Value}];
+    };
+
     console.log("Produced In: " + result.Country);
     console.log("Available Languages: " + result.Language);
     console.log("Plot: " + result.Plot);
     console.log("Actors: " + result.Actors);
 
-    fs.appendFile("log.txt",
-      "command: " + command +
-      "\nrequested: " + moment().format('LLLL') +
-      "\nMovie Title: " + result.Title +
-      "\nRelease Year: " + result.Year +
-      "\n" + result.Ratings[0].Source + ":" + "Value: " + result.Ratings[0].Value +
-      "\n" + result.Ratings[0].Source + ":" + "Value: " + result.Ratings[0].Value +
-      "\nProduced In: " + result.Country +
-      "\nAvailable Languages: " + result.Language +
-      "\nPlot: " + result.Plot +
-      "\nActors: " + result.Actors + ",\n\n", 'utf8',
-      function(error) {
+    var logData = {
+      "command": command,
+      "requested": moment().format('LLLL'),
+      "movie_title": result.Title,
+      "release_year": result.Year,
+      "ratings": dataLogRating,
+      "country": result.Country,
+      "language": result.Language,
+      "plot": result.Plot,
+      "actors": result.Actors
+    };
+
+    var logDataJSON = JSON.stringify(logData, null, 2);
+
+    fs.appendFile("log.txt", logDataJSON, function(error) {
         if (error) {
           return console.log('Error occurred: ' + error);
         }
@@ -162,11 +187,20 @@ function random() {
   });
 };
 
+function readLog() {
+  fs.readFile("log.txt", "utf8", function(error, result){
+    if(error) {
+      return console.log('Error occured: ' + error);
+    }
+    console.log(result);
+  })
+}
+
 inquirer.prompt([
   {
     type: "list",
     message: "Hello! What would you like for me to look up?",
-    choices: ["my-tweets", "spotify-this-song", "movie-this", "do-what-it-says"],
+    choices: ["my-tweets", "spotify-this-song", "movie-this", "do-what-it-says", "read-log"],
     name: "command"
   }
 ]) .then(function(inquirerResponse) {
@@ -210,5 +244,11 @@ inquirer.prompt([
        command = "do-what-it-says";
        random();
      break;
+
+     case "read-log":
+       command = "read-log";
+       readLog();
+     break;
+
     }
   });
